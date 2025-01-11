@@ -12,8 +12,9 @@ if not os.path.exists(output_directory):
 # Loop through each file in the image directory
 for file_name in os.listdir(image_directory):
     if file_name.endswith((".jpg", ".png", ".jpeg")):  # Only process image files
-        # QR Code data is the file name
-        data = file_name
+        # QR Code data is the file name without the extension
+        data = os.path.splitext(file_name)[0]
+        print('data',data)
         
         # Create a QR Code object
         qr = qrcode.QRCode(
@@ -29,7 +30,7 @@ for file_name in os.listdir(image_directory):
         img = qr.make_image(fill_color="black", back_color="white")
 
         # Save the QR Code with a new name
-        qr_code_file_name = f"qr_code_{file_name.split('.')[0]}.png"
+        qr_code_file_name = f"qr_code_{data}.png"
         img.save(os.path.join(output_directory, qr_code_file_name))
 
 print("QR Codes have been generated and saved!")
