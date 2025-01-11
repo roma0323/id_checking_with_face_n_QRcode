@@ -3,7 +3,7 @@ import cv2
 import os
 import glob
 
-image_extensions = ["*.png", "*.jpg", "*.jpeg", "*.bmp", "*.tiff"]
+image_extensions = ["*.png", "*.jpg", "*.jpeg"]
 face_example_dir = "face_example"
 target_width = 640
 target_height = 480

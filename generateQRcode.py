@@ -1,9 +1,12 @@
 import os
 import qrcode
+from convertHeicToJpg import convert_heic_to_jpg
 
 # Specify the directory containing your images
 image_directory = "face_example"
 output_directory = "qr_codes"
+
+convert_heic_to_jpg()
 
 # Create the output directory if it doesn't exist
 if not os.path.exists(output_directory):

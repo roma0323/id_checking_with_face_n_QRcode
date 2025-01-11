@@ -15,8 +15,8 @@ while True:
     ret, frame = video_capture.read()
     if not ret:
         break
-                    
-    name = "Unknown"
+    camera_face_name = "Unknown"         
+    certain_known_face_name = "Unknown"
     qrData ="Unknown"
     try:
         # Detect QR codes in the frame
@@ -24,18 +24,20 @@ while True:
         qrData, bbox, _ = qr_code_detector.detectAndDecode(frame)
         
         if bbox is not None and qrData:
-            # , draw a circle around the QR code
-            pts = bbox.astype(int).reshape(-1, 1, 2)
-            cv2.polylines(frame, [pts], isClosed=True, color=(0, 255, 0), thickness=3)
-    
+            
             known_face_encodings_index = -1
             if qrData in known_face_names:
                 known_face_encodings_index = known_face_names.index(qrData)
                 print(f"{qrData} is in position {known_face_encodings_index}")
-            else:
-                print("Unknown QR code data")
+                certain_known_face_encodings = [known_face_encodings[known_face_encodings_index]] if known_face_encodings_index != -1 else []
+                certain_known_face_name = known_face_names[known_face_encodings_index] if known_face_encodings_index != -1 else []
                 
-            certain_known_face_encodings = [known_face_encodings[known_face_encodings_index]] if known_face_encodings_index != -1 else []
+            # , draw a circle around the QR code
+            color = (0, 255, 0) if qrData in known_face_names else (0, 0, 255)  # Green if match, red otherwise
+            pts = bbox.astype(int).reshape(-1, 1, 2)
+            cv2.polylines(frame, [pts], isClosed=True, color=color, thickness=3)
+            cv2.putText(frame, qrData, (pts[0][0][0], pts[0][0][1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)    
+            
             
             face_locations = face_recognition.face_locations(frame)
             if  face_locations:
@@ -51,25 +53,24 @@ while True:
                     # Optionally, annotate the frame with the name of the matched face
                     distance_text = ""
                     if any(matches):
-                        match_index = matches.index(True)
-                        name = known_face_names[match_index]
-                        distance_text = f" ({face_distances[match_index]:.2f})"
+                        camera_face_name = certain_known_face_name
+                        distance_text = f" ({face_distances[0]:.2f})"
 
                     # Draw a rectangle around the face
                     cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
                     # Display the name and distance (optional)
-                    cv2.putText(frame, f"{name}{distance_text}", (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                    cv2.putText(frame, f"{camera_face_name}{distance_text}", (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
                     # Display the distance for each known face encoding
                     for i, known_face_encoding in enumerate(certain_known_face_encodings):
-                        distance_text = f" {known_face_names[i]} : {face_distances[i]:.2f}"
+                        distance_text = f" {certain_known_face_name} : {face_distances[i]:.2f}"
                         cv2.putText(frame, distance_text, (10, 30 + i * 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
             else :
                 print("No face found")
         else:
             print("No QR code found")        
-    # tell qr code whether correct guy
-        cv2.putText(frame, "qrData: "+qrData+" name: "+name, (10, 400), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        if qrData == name:
+        # tell qr code whether correct guy
+        cv2.putText(frame, "qrData: "+qrData+" name: "+camera_face_name, (10, 400), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        if qrData == camera_face_name:
             cv2.putText(frame, "pass", (10, 420), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
         else:
             cv2.putText(frame, "no pass", (10, 420), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
